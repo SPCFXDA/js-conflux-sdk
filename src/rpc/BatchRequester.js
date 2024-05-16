@@ -1,5 +1,6 @@
 const RPCError = require('../provider/RPCError');
 const Transaction = require('../Transaction');
+const format = require('../util/format');
 
 const SEND_TX_METHOD = 'cfx_sendTransaction';
 const SEND_RAW_TX_METHOD = 'cfx_sendRawTransaction';
@@ -172,6 +173,9 @@ class BatchRequester {
   }
 
   _markNonceUsed(from, nonce) {
+    from = format.address(from, this.conflux.networkId);
+    nonce = format.bigUInt(nonce);
+
     if (!this.accountUsedNonces[from]) {
       this.accountUsedNonces[from] = {};
     }
@@ -179,6 +183,9 @@ class BatchRequester {
   }
 
   _isNonceUsed(from, nonce) {
+    from = format.address(from, this.conflux.networkId);
+    nonce = format.bigUInt(nonce);
+
     return this.accountUsedNonces[from] && this.accountUsedNonces[from][nonce];
   }
 

@@ -3,7 +3,7 @@
 [![npm](https://img.shields.io/npm/v/js-conflux-sdk.svg)](https://www.npmjs.com/package/js-conflux-sdk)
 [![npm](https://img.shields.io/npm/dm/js-conflux-sdk.svg)](https://www.npmjs.com/package/js-conflux-sdk)
 
-JavaScript Conflux Software Development Kit is a complete library for interacting with the [Conflux Blockchain Core Space](https://doc.confluxnetwork.org/docs/core/Overview) in both Node.js and browser environment.
+JavaScript Conflux Software Development Kit is a complete library for interacting with the **[Conflux Blockchain Core Space](https://doc.confluxnetwork.org/docs/core/Overview)** in both Node.js and browser environment.
 
 Featured with:
 
@@ -17,6 +17,8 @@ Featured with:
   3. Crypto utilities
   4. Type conversion
 * Extensive documentation and examples
+
+For the Conflux eSpace JS SDK, consider using one of the following robust libraries: [ethers.js](https://docs.ethers.org/v6/), [viem](https://viem.sh/), or [web3.js](https://web3js.readthedocs.io/en/v1.10.0/)
 
 ## Docs
 
@@ -35,7 +37,7 @@ Featured with:
 Install through npm
 
 ```sh
-$ npm install js-conflux-sdk
+npm install js-conflux-sdk
 ```
 
 ## How to import
