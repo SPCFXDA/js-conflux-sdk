@@ -3,16 +3,13 @@ const rlp = require('./util/rlp');
 const format = require('./util/format');
 const cfxFormat = require('./rpc/types/formatter');
 const { AccessList } = require('./primitives/AccessList');
+const { TXRLP_TYPE_PREFIX_2930, TXRLP_TYPE_PREFIX_1559 } = require('./CONST');
 
 /**
  * @typedef {import('./rpc/types/formatter').CallRequest} TransactionMeta
  */
 
 class Transaction {
-  static TYPE_PREFIX = Buffer.from("cfx");
-  static TYPE_PREFIX_2930 = Buffer.concat([Transaction.TYPE_PREFIX, Buffer.from([1])]);
-  static TYPE_PREFIX_1559 = Buffer.concat([Transaction.TYPE_PREFIX, Buffer.from([2])]);
-
   /**
    * Decode rlp encoded raw transaction hex string
    * TODO: support EIP-2930 and EIP-1559
@@ -22,11 +19,11 @@ class Transaction {
   static decodeRaw(raw) {
     const buf = format.hexBuffer(raw);
     const prefix = buf.slice(0, 4);
-    
-    if (prefix.equals(Transaction.TYPE_PREFIX_2930)) {
+
+    if (prefix.equals(TXRLP_TYPE_PREFIX_2930)) {
       return Transaction.decode2930(buf.slice(4));
-    } else if (prefix.equals(Transaction.TYPE_PREFIX_1559)) {
-      return Transaction.decode1559(buf.slice(4));  
+    } else if (prefix.equals(TXRLP_TYPE_PREFIX_1559)) {
+      return Transaction.decode1559(buf.slice(4));
     }
 
     return Transaction.decodeLegacy(raw);
@@ -153,7 +150,7 @@ class Transaction {
    * @param {string|number} [options.maxFeePerGas] - EIP-1559 maxFeePerGas
    * @return {Transaction}
    */
-  constructor({ 
+  constructor({
     type = 0,
     from,
     nonce,
@@ -243,9 +240,9 @@ class Transaction {
   typePrefix() {
     let prefix = Buffer.from([]);
     if (this.type === 1) {
-      prefix = Transaction.TYPE_PREFIX_2930;
+      prefix = TXRLP_TYPE_PREFIX_2930;
     } else if (this.type === 2) {
-      prefix = Transaction.TYPE_PREFIX_1559;
+      prefix = TXRLP_TYPE_PREFIX_1559;
     }
     return prefix;
   }
@@ -272,7 +269,7 @@ class Transaction {
       const raw = includeSignature
         ? [[nonce, gasPrice, gas, to, value, storageLimit, epochHeight, chainId, data, accessList], v, r, s]
         : [nonce, gasPrice, gas, to, value, storageLimit, epochHeight, chainId, data, accessList];
-      
+
       return Buffer.concat([this.typePrefix(), rlp.encode(raw)]);
     } else if (this.type === 2) { // 1559 transaction
       const { nonce, maxPriorityFeePerGas, maxFeePerGas, gas, to, value, storageLimit, epochHeight, chainId, data, v, r, s } = cfxFormat.sign1559Tx(this);
@@ -281,12 +278,12 @@ class Transaction {
       const raw = includeSignature
         ? [[nonce, maxPriorityFeePerGas, maxFeePerGas, gas, to, value, storageLimit, epochHeight, chainId, data, accessList], v, r, s]
         : [nonce, maxPriorityFeePerGas, maxFeePerGas, gas, to, value, storageLimit, epochHeight, chainId, data, accessList];
-      
-        return Buffer.concat([this.typePrefix(), rlp.encode(raw)]);
+
+      return Buffer.concat([this.typePrefix(), rlp.encode(raw)]);
     } else {
       throw new Error('Unsupported transaction type');
     }
-  } 
+  }
 
   /**
    * Get the raw transaction hex string.

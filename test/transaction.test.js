@@ -18,47 +18,47 @@ const txMeta = {
 const rawTx = '0xf863df8001825208940123456789012345678901234567890123456789808080018001a0ef53e4af065905cb5134f7de4e9434e71656f824e3e268a9babb4f14ff808113a0407f05f44f79c1fd19262665d3efc29368e317fe5e77be27c0c1314b6a242a1e';
 
 const tx2930Meta = {
-  "type": 1,
-  "nonce": 100,
-  "gasPrice": 100,
-  "gas": 100,
-  "to": "0x19578cf3c71eab48cf810c78b5175d5c9e6ef441",
-  "value": 100,
-  "data": format.hex(Buffer.from("Hello, World")),
-  "storageLimit": 100,
-  "epochHeight": 100,
-  "chainId": 100,
-  "accessList": [
-      {
-          "address": "0x19578cf3c71eab48cf810c78b5175d5c9e6ef441",
-          "storageKeys": [
-            "0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef"
-          ]
-      }
+  type: 1,
+  nonce: 100,
+  gasPrice: 100,
+  gas: 100,
+  to: '0x19578cf3c71eab48cf810c78b5175d5c9e6ef441',
+  value: 100,
+  data: format.hex(Buffer.from('Hello, World')),
+  storageLimit: 100,
+  epochHeight: 100,
+  chainId: 100,
+  accessList: [
+    {
+      address: '0x19578cf3c71eab48cf810c78b5175d5c9e6ef441',
+      storageKeys: [
+        '0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef',
+      ],
+    },
   ],
 };
 
 const tx1559Meta = {
-  "type": 2,
-  "nonce": 100,
-  "maxPriorityFeePerGas": 100,
-  "maxFeePerGas": 100,
-  "gas": 100,
-  "to": "0x19578cf3c71eab48cf810c78b5175d5c9e6ef441",
-  "value": 100,
-  "data": format.hex(Buffer.from("Hello, World")),
-  "storageLimit": 100,
-  "epochHeight": 100,
-  "chainId": 100,
-  "accessList": [
+  type: 2,
+  nonce: 100,
+  maxPriorityFeePerGas: 100,
+  maxFeePerGas: 100,
+  gas: 100,
+  to: '0x19578cf3c71eab48cf810c78b5175d5c9e6ef441',
+  value: 100,
+  data: format.hex(Buffer.from('Hello, World')),
+  storageLimit: 100,
+  epochHeight: 100,
+  chainId: 100,
+  accessList: [
     {
-      "address": "0x19578cf3c71eab48cf810c78b5175d5c9e6ef441",
-      "storageKeys": [
-        "0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef"
-      ]
-    }
+      address: '0x19578cf3c71eab48cf810c78b5175d5c9e6ef441',
+      storageKeys: [
+        '0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef',
+      ],
+    },
   ],
-}
+};
 
 test('Transaction', () => {
   const transaction = new Transaction(txMeta);
@@ -91,16 +91,16 @@ test('Transaction', () => {
 
 test('2930 tx encode', () => {
   const tx1 = new Transaction(Object.assign(tx2930Meta, {
-    "r": 1,
-    "s": 1,
-    "v": 0,
+    r: 1,
+    s: 1,
+    v: 0,
   }));
 
   const rlpEncode = tx1.encode(false);
 
   expect(format.hex(rlpEncode).startsWith('0x63667801')).toEqual(true);
   expect(format.hex(sign.keccak256(rlpEncode))).toEqual('0x690d58e271b90254e7954147846d5de0f76f3649510bb58a5f26e4fef8d601ba');
-  expect(format.hex(tx1.encode(true))).toEqual("0x63667801f868f8636464649419578cf3c71eab48cf810c78b5175d5c9e6ef441646464648c48656c6c6f2c20576f726c64f838f79419578cf3c71eab48cf810c78b5175d5c9e6ef441e1a01234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef800101");
+  expect(format.hex(tx1.encode(true))).toEqual('0x63667801f868f8636464649419578cf3c71eab48cf810c78b5175d5c9e6ef441646464648c48656c6c6f2c20576f726c64f838f79419578cf3c71eab48cf810c78b5175d5c9e6ef441e1a01234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef800101');
 });
 
 test('2930 tx sign', () => {
@@ -111,16 +111,16 @@ test('2930 tx sign', () => {
 
 test('1559 tx encode', () => {
   const tx1 = new Transaction(Object.assign(tx1559Meta, {
-    "r": 1,
-    "s": 1,
-    "v": 0,
+    r: 1,
+    s: 1,
+    v: 0,
   }));
 
   const rlpEncode = tx1.encode(false);
 
   expect(format.hex(rlpEncode).startsWith('0x63667802')).toEqual(true);
   expect(format.hex(sign.keccak256(rlpEncode))).toEqual('0x3da56dbe2b76c41135c2429f3035cd79b1abb68902cf588075c30d4912e71cf3');
-  expect(format.hex(tx1.encode(true))).toEqual("0x63667802f869f864646464649419578cf3c71eab48cf810c78b5175d5c9e6ef441646464648c48656c6c6f2c20576f726c64f838f79419578cf3c71eab48cf810c78b5175d5c9e6ef441e1a01234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef800101");
+  expect(format.hex(tx1.encode(true))).toEqual('0x63667802f869f864646464649419578cf3c71eab48cf810c78b5175d5c9e6ef441646464648c48656c6c6f2c20576f726c64f838f79419578cf3c71eab48cf810c78b5175d5c9e6ef441e1a01234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef800101');
 });
 
 test('starts with 0x00', () => {

@@ -10,26 +10,28 @@ class AccessListEntry {
   encode() {
     return [
       format.hexBuffer(this.address),
-      this.storageKeys.map(val => format.hexBuffer(val))
+      this.storageKeys.map(val => format.hexBuffer(val)),
     ];
   }
 }
 
 class AccessList {
   /**
-   * 
-   * @param {object[]|array[]} entries 
+   *
+   * @param {object[]|array[]} entries
    */
   constructor(entries = []) {
     // initiate AccessListEntry
-    for(let i in entries) {
-      let entry = entries[i];
-      if (Array.isArray(entry)) {
-        entries[i] = new AccessListEntry(entry[0], entry[1]);
-      } else if (typeof entry === 'object') {
-        entries[i] = new AccessListEntry(entry.address, entry.storageKeys);
-      } else {
-        throw new Error('Invalid AccessListEntry');
+    for (const i in entries) {
+      if (Object.hasOwn(entries, i)) {
+        const entry = entries[i];
+        if (Array.isArray(entry)) {
+          entries[i] = new AccessListEntry(entry[0], entry[1]);
+        } else if (typeof entry === 'object') {
+          entries[i] = new AccessListEntry(entry.address, entry.storageKeys);
+        } else {
+          throw new Error('Invalid AccessListEntry');
+        }
       }
     }
     this.entries = entries;
@@ -42,5 +44,5 @@ class AccessList {
 
 module.exports = {
   AccessListEntry,
-  AccessList
+  AccessList,
 };

@@ -1,11 +1,11 @@
-const {AccessList} = require('../../src/primitives/AccessList');
+const { AccessList } = require('../../src/primitives/AccessList');
 const format = require('../../src/util/format');
 
 const TEST_ADDRESS = '0x1123456789012345678901234567890123456789';
 const TEST_BASE32_ADDRESS = 'cfx:aajwgvnhveawgvnhveawgvnhveawgvnhve8c2ukvxz';
 
-const STORAGE_KEY3 = "0x0000000000000000000000000000000000000000000000000000000000000003";
-const STORAGE_KEY7 = "0x0000000000000000000000000000000000000000000000000000000000000007";
+const STORAGE_KEY3 = '0x0000000000000000000000000000000000000000000000000000000000000003';
+const STORAGE_KEY7 = '0x0000000000000000000000000000000000000000000000000000000000000007';
 
 test('AccessList', () => {
   const accessList1 = new AccessList([[TEST_ADDRESS, []]]);
@@ -33,6 +33,6 @@ test('AccessList encode', () => {
   const accessList1 = new AccessList([[TEST_BASE32_ADDRESS, [STORAGE_KEY3]]]);
 
   expect(accessList1.encode()).toEqual([
-    [format.hexBuffer(TEST_ADDRESS), [format.hexBuffer(STORAGE_KEY3)]]
+    [format.hexBuffer(TEST_ADDRESS), [format.hexBuffer(STORAGE_KEY3)]],
   ]);
 });

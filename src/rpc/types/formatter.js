@@ -141,7 +141,7 @@ cfxFormat.callTxAdvance = function (networkId, toHexAddress = false, useVerboseA
     epochHeight: format.bigUIntHex,
     chainId: format.bigUIntHex,
     data: format.hex,
-    accessList: format([cfxFormat.AccessListEntry]).$or(null)
+    accessList: format([cfxFormat.AccessListEntry]).$or(null),
   }, {
     pick: true,
     name: 'format.callTxAdvance',
