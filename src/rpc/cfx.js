@@ -48,6 +48,26 @@ class CFX extends RPCMethodFactory {
         responseFormatter: format.bigUInt,
       },
       {
+        method: 'cfx_maxPriorityFeePerGas',
+        alias: 'maxPriorityFeePerGas',
+        responseFormatter: format.bigUInt,
+      },
+      {
+        method: 'cfx_getFeeBurnt',
+        alias: 'getFeeBurnt',
+        responseFormatter: format.bigUInt,
+      },
+      {
+        method: 'cfx_feeHistory',
+        alias: 'feeHistory',
+        requestFormatters: [
+          format.bigUIntHex,
+          format.epochNumber,
+          format([format.bigUIntHex]),
+        ],
+        responseFormatter: cfxFormat.feeHistory,
+      },
+      {
         method: 'cfx_getInterestRate',
         requestFormatters: [
           format.epochNumberOrUndefined,

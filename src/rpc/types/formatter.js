@@ -42,6 +42,11 @@ cfxFormat.getLogsAdvance = function (networkId, toHexAddress = false, useVerbose
   });
 };
 
+cfxFormat.AccessListEntry = format({
+  address: format.any,
+  storageKeys: [format.hex64],
+});
+
 cfxFormat.transactionToAddress = format(format.hexAddress.$or(null).$default(null))
   .$after(format.hexBuffer)
   .$validate(hBuf => hBuf.length === 0 || validAddressPrefix(hBuf), 'transactionToAddress');
@@ -100,9 +105,12 @@ cfxFormat.sign1559Tx = format({
  * @property {number} [chainId]
  */
 cfxFormat.callTx = format({
+  type: format.uInt.$or(null),
   from: format.address,
   nonce: format.bigUIntHex,
-  gasPrice: format.bigUIntHex,
+  gasPrice: format.bigUIntHex.$or(null),
+  maxPriorityFeePerGas: format.bigUIntHex.$or(null),
+  maxFeePerGas: format.bigUIntHex.$or(null),
   gas: format.bigUIntHex,
   to: format.address.$or(null),
   value: format.bigUIntHex,
@@ -110,6 +118,7 @@ cfxFormat.callTx = format({
   epochHeight: format.bigUIntHex,
   chainId: format.bigUIntHex,
   data: format.hex,
+  accessList: format([cfxFormat.AccessListEntry]).$or(null),
 }, {
   pick: true,
   name: 'format.callTx',
@@ -119,9 +128,12 @@ cfxFormat.callTx = format({
 cfxFormat.callTxAdvance = function (networkId, toHexAddress = false, useVerboseAddress = false) {
   const fromatAddress = toHexAddress ? format.hexAddress : format.netAddress(networkId, useVerboseAddress);
   return format({
+    type: format.uInt.$or(null),
     from: fromatAddress,
     nonce: format.bigUIntHex,
-    gasPrice: format.bigUIntHex,
+    gasPrice: format.bigUIntHex.$or(null),
+    maxPriorityFeePerGas: format.bigUIntHex.$or(null),
+    maxFeePerGas: format.bigUIntHex.$or(null),
     gas: format.bigUIntHex,
     to: fromatAddress.$or(null),
     value: format.bigUIntHex,
@@ -129,6 +141,7 @@ cfxFormat.callTxAdvance = function (networkId, toHexAddress = false, useVerboseA
     epochHeight: format.bigUIntHex,
     chainId: format.bigUIntHex,
     data: format.hex,
+    accessList: format([cfxFormat.AccessListEntry]).$or(null)
   }, {
     pick: true,
     name: 'format.callTxAdvance',
@@ -201,8 +214,11 @@ cfxFormat.estimate = format({
  * @prop {number} [status=null] - 0 for success, 1 if an error occurred, 2 for skiped, null when the transaction is skipped or not packed.
  */
 cfxFormat.transaction = format({
+  type: format.uInt.$or(null),
   nonce: format.bigUInt,
-  gasPrice: format.bigUInt,
+  gasPrice: format.bigUInt.$or(null),
+  maxPriorityFeePerGas: format.bigUInt.$or(null),
+  maxFeePerGas: format.bigUInt.$or(null),
   gas: format.bigUInt,
   value: format.bigUInt,
   storageLimit: format.bigUInt,
@@ -211,6 +227,7 @@ cfxFormat.transaction = format({
   v: format.uInt,
   status: format.uInt.$or(null),
   transactionIndex: format.uInt.$or(null),
+  accessList: format([cfxFormat.AccessListEntry]).$or(null),
 }, {
   name: 'format.transaction',
 });
@@ -242,6 +259,7 @@ cfxFormat.transaction = format({
  * @prop {string} posReference - 32 Bytes - the hash of the PoS newest committed block. Added from Conflux-rust v2.0.0
  */
 cfxFormat.block = format({
+  baseFeePerGas: format.bigUInt.$or(null),
   epochNumber: format.uInt.$or(null),
   blockNumber: format.uInt.$or(null),
   blame: format.uInt,
@@ -278,10 +296,13 @@ cfxFormat.block = format({
  * @prop {string} [txExecErrorMsg] - the error message of transaction execution. null when the transaction is succeeded.
  */
 cfxFormat.receipt = format({
+  type: format.uInt.$or(null),
   index: format.uInt,
   epochNumber: format.uInt,
   outcomeStatus: format.uInt.$or(null),
   gasUsed: format.bigUInt,
+  effectiveGasPrice: format.bigUInt.$or(null),
+  burntGasFee: format.bigUInt.$or(null),
   gasFee: format.bigUInt,
   storageCollateralized: format.bigUInt,
   storageReleased: [{
@@ -417,6 +438,7 @@ cfxFormat.depositList = format([
  * @prop {string} posReference - 32 Bytes - the hash of the PoS newest committed block. Added from Conflux-rust v2.0.0
  */
 cfxFormat.head = format({
+  baseFeePerGas: format.bigUInt.$or(null),
   difficulty: format.bigUInt,
   epochNumber: format.uInt.$or(null),
   gasLimit: format.bigUInt,
@@ -495,6 +517,8 @@ cfxFormat.posEconomics = format({
 cfxFormat.voteParamsInfo = format({
   powBaseReward: format.bigUInt,
   interestRate: format.bigUInt,
+  baseFeeShareProp: format.bigUInt,
+  storagePointProp: format.bigUInt,
 }, {
   name: 'format.voteParamsInfo',
 });
@@ -514,6 +538,13 @@ cfxFormat.collateralInfo = format({
 cfxFormat.wrapTransaction = format({
   nativeTransaction: cfxFormat.transaction,
   ethTransaction: format.any,
+});
+
+cfxFormat.feeHistory = format({
+  oldestBlock: format.bigUInt,
+  baseFeePerGas: [format.bigUInt],
+  reward: [[format.bigUInt]],
+  gasUsedRatio: format.any,
 });
 
 module.exports = cfxFormat;
