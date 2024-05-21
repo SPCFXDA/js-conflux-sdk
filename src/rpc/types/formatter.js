@@ -65,6 +65,27 @@ cfxFormat.signTx = format({
   name: 'format.signTx',
 });
 
+cfxFormat.sign1559Tx = format({
+  nonce: format.bigUInt.$after(format.hexBuffer),
+  maxPriorityFeePerGas: format.bigUInt.$after(format.hexBuffer),
+  maxFeePerGas: format.bigUInt.$after(format.hexBuffer),
+  gas: format.bigUInt.$after(format.hexBuffer),
+  to: cfxFormat.transactionToAddress,
+  value: format.bigUInt.$default(0).$after(format.hexBuffer),
+  storageLimit: format.bigUInt.$after(format.hexBuffer),
+  epochHeight: format.bigUInt.$after(format.hexBuffer),
+  chainId: format.uInt.$default(0).$after(format.hexBuffer),
+  data: format.hex.$default('0x').$after(format.hexBuffer),
+  // accessList: format.any.$default([]),
+  r: (format.bigUInt.$after(format.hexBuffer)).$or(undefined),
+  s: (format.bigUInt.$after(format.hexBuffer)).$or(undefined),
+  v: (format.uInt.$after(format.hexBuffer)).$or(undefined),
+}, {
+  strict: true,
+  pick: true,
+  name: 'format.sign1559Tx',
+});
+
 /**
  * @typedef {Object} CallRequest
  * @property {string} [from]

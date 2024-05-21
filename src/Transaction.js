@@ -2,19 +2,37 @@ const { keccak256, ecdsaSign, ecdsaRecover, privateKeyToAddress, publicKeyToAddr
 const rlp = require('./util/rlp');
 const format = require('./util/format');
 const cfxFormat = require('./rpc/types/formatter');
+const { AccessList } = require('./primitives/AccessList');
 
 /**
  * @typedef {import('./rpc/types/formatter').CallRequest} TransactionMeta
  */
 
 class Transaction {
+  static TYPE_PREFIX = Buffer.from("cfx");
+  static TYPE_PREFIX_2930 = Buffer.concat([Transaction.TYPE_PREFIX, Buffer.from([1])]);
+  static TYPE_PREFIX_1559 = Buffer.concat([Transaction.TYPE_PREFIX, Buffer.from([2])]);
+
   /**
    * Decode rlp encoded raw transaction hex string
-   *
+   * TODO: support EIP-2930 and EIP-1559
    * @param {string} raw - rlp encoded transaction hex string
    * @returns {Transaction} A Transaction instance
    */
   static decodeRaw(raw) {
+    const buf = format.hexBuffer(raw);
+    const prefix = buf.slice(0, 4);
+    
+    if (prefix.equals(Transaction.TYPE_PREFIX_2930)) {
+      return Transaction.decode2930(buf.slice(4));
+    } else if (prefix.equals(Transaction.TYPE_PREFIX_1559)) {
+      return Transaction.decode1559(buf.slice(4));  
+    }
+
+    return Transaction.decodeLegacy(raw);
+  }
+
+  static decodeLegacy(raw) {
     const [
       [nonce, gasPrice, gas, to, value, storageLimit, epochHeight, chainId, data],
       v,
@@ -24,6 +42,7 @@ class Transaction {
 
     const netId = format.uInt(chainId);
     const tx = new Transaction({
+      type: 0,
       nonce: format.bigIntFromBuffer(nonce),
       gasPrice: format.bigIntFromBuffer(gasPrice),
       gas: format.bigIntFromBuffer(gas),
@@ -44,10 +63,78 @@ class Transaction {
     return tx;
   }
 
+  static decode2930(raw) {
+    const [
+      [nonce, gasPrice, gas, to, value, storageLimit, epochHeight, chainId, data, accessList],
+      v,
+      r,
+      s,
+    ] = rlp.decode(raw);
+
+    // console.log(accessList);
+
+    const netId = format.uInt(chainId);
+    const tx = new Transaction({
+      type: 1,
+      nonce: format.bigIntFromBuffer(nonce),
+      gasPrice: format.bigIntFromBuffer(gasPrice),
+      gas: format.bigIntFromBuffer(gas),
+      to: to.length === 0 ? null : format.address(to, netId),
+      value: format.bigIntFromBuffer(value),
+      storageLimit: format.bigIntFromBuffer(storageLimit),
+      epochHeight: format.bigIntFromBuffer(epochHeight),
+      chainId: format.uInt(chainId),
+      data: format.hex(data),
+      accessList,
+      v: v.length === 0 ? 0 : format.uInt(v),
+      r: format.hex(r),
+      s: format.hex(s),
+    });
+
+    const publicKey = tx.recover();
+    const hexAddress = publicKeyToAddress(format.hexBuffer(publicKey));
+    tx.from = format.address(hexAddress, netId);
+    return tx;
+  }
+
+  static decode1559(raw) {
+    const [
+      [nonce, maxPriorityFeePerGas, maxFeePerGas, gas, to, value, storageLimit, epochHeight, chainId, data, accessList],
+      v,
+      r,
+      s,
+    ] = rlp.decode(raw);
+
+    const netId = format.uInt(chainId);
+    const tx = new Transaction({
+      type: 2,
+      nonce: format.bigIntFromBuffer(nonce),
+      maxPriorityFeePerGas: format.bigIntFromBuffer(maxPriorityFeePerGas),
+      maxFeePerGas: format.bigIntFromBuffer(maxFeePerGas),
+      gas: format.bigIntFromBuffer(gas),
+      to: to.length === 0 ? null : format.address(to, netId),
+      value: format.bigIntFromBuffer(value),
+      storageLimit: format.bigIntFromBuffer(storageLimit),
+      epochHeight: format.bigIntFromBuffer(epochHeight),
+      chainId: format.uInt(chainId),
+      data: format.hex(data),
+      accessList,
+      v: v.length === 0 ? 0 : format.uInt(v),
+      r: format.hex(r),
+      s: format.hex(s),
+    });
+
+    const publicKey = tx.recover();
+    const hexAddress = publicKeyToAddress(format.hexBuffer(publicKey));
+    tx.from = format.address(hexAddress, netId);
+    return tx;
+  }
+
   /**
    * Create a transaction.
    *
    * @param {object} options
+   * @param {number} [options.type] - Tx type: 0 for legacy, 1 for EIP-2930, 2 for EIP-1559
    * @param {string} [options.from] - The sender address.
    * @param {string|number} [options.nonce] - This allows to overwrite your own pending transactions that use the same nonce.
    * @param {string|number} [options.gasPrice] - The price of gas for this transaction in drip.
@@ -60,10 +147,32 @@ class Transaction {
    * @param {string|Buffer} [options.data]- Either a ABI byte string containing the data of the function call on a contract, or in the case of a contract-creation transaction the initialisation code.
    * @param {string|Buffer} [options.r] - ECDSA signature r
    * @param {string|Buffer} [options.s] - ECDSA signature s
-   * @param {number} [options.v] - ECDSA recovery id
+   * @param {number} [options.v] - ECDSA signature v
+   * @param {array} [options.accessList] - EIP-2930 access list
+   * @param {string|number} [options.maxPriorityFeePerGas] - EIP-1559 maxPriorityFeePerGas
+   * @param {string|number} [options.maxFeePerGas] - EIP-1559 maxFeePerGas
    * @return {Transaction}
    */
-  constructor({ from, nonce, gasPrice, gas, to, value, storageLimit, epochHeight, chainId, data, v, r, s }) {
+  constructor({ 
+    type = 0,
+    from,
+    nonce,
+    gasPrice,
+    gas,
+    to,
+    value,
+    storageLimit,
+    epochHeight,
+    chainId,
+    data,
+    v,
+    r,
+    s,
+    accessList,
+    maxPriorityFeePerGas,
+    maxFeePerGas,
+  }) {
+    this.type = type;
     this.from = from;
     this.nonce = nonce;
     this.gasPrice = gasPrice;
@@ -77,6 +186,9 @@ class Transaction {
     this.v = v;
     this.r = r;
     this.s = s;
+    this.accessList = new AccessList(accessList);
+    this.maxPriorityFeePerGas = maxPriorityFeePerGas;
+    this.maxFeePerGas = maxFeePerGas;
   }
 
   /**
@@ -103,13 +215,13 @@ class Transaction {
    */
   sign(privateKey, networkId) {
     const privateKeyBuffer = format.hexBuffer(privateKey);
-    const addressBuffer = privateKeyToAddress(privateKeyBuffer);
     const { r, s, v } = ecdsaSign(keccak256(this.encode(false)), privateKeyBuffer);
-
-    this.from = format.address(addressBuffer, networkId);
     this.r = format.hex(r);
     this.s = format.hex(s);
     this.v = v;
+
+    const addressBuffer = privateKeyToAddress(privateKeyBuffer);
+    this.from = format.address(addressBuffer, networkId || this.chainId);
 
     return this;
   }
@@ -128,6 +240,16 @@ class Transaction {
     return format.publicKey(publicKey);
   }
 
+  typePrefix() {
+    let prefix = Buffer.from([]);
+    if (this.type === 1) {
+      prefix = Transaction.TYPE_PREFIX_2930;
+    } else if (this.type === 2) {
+      prefix = Transaction.TYPE_PREFIX_1559;
+    }
+    return prefix;
+  }
+
   /**
    * Encode rlp.
    *
@@ -135,14 +257,36 @@ class Transaction {
    * @return {Buffer}
    */
   encode(includeSignature) {
-    const { nonce, gasPrice, gas, to, value, storageLimit, epochHeight, chainId, data, v, r, s } = cfxFormat.signTx(this);
+    if (this.type === 0) { // legacy transaction
+      const { nonce, gasPrice, gas, to, value, storageLimit, epochHeight, chainId, data, v, r, s } = cfxFormat.signTx(this);
 
-    const raw = includeSignature
-      ? [[nonce, gasPrice, gas, to, value, storageLimit, epochHeight, chainId, data], v, r, s]
-      : [nonce, gasPrice, gas, to, value, storageLimit, epochHeight, chainId, data];
+      const raw = includeSignature
+        ? [[nonce, gasPrice, gas, to, value, storageLimit, epochHeight, chainId, data], v, r, s]
+        : [nonce, gasPrice, gas, to, value, storageLimit, epochHeight, chainId, data];
 
-    return rlp.encode(raw);
-  }
+      return rlp.encode(raw);
+    } else if (this.type === 1) { // 2930 transaction
+      const { nonce, gasPrice, gas, to, value, storageLimit, epochHeight, chainId, data, v, r, s } = cfxFormat.signTx(this);
+      const accessList = this.accessList.encode();
+
+      const raw = includeSignature
+        ? [[nonce, gasPrice, gas, to, value, storageLimit, epochHeight, chainId, data, accessList], v, r, s]
+        : [nonce, gasPrice, gas, to, value, storageLimit, epochHeight, chainId, data, accessList];
+      
+      return Buffer.concat([this.typePrefix(), rlp.encode(raw)]);
+    } else if (this.type === 2) { // 1559 transaction
+      const { nonce, maxPriorityFeePerGas, maxFeePerGas, gas, to, value, storageLimit, epochHeight, chainId, data, v, r, s } = cfxFormat.sign1559Tx(this);
+      const accessList = this.accessList.encode();
+
+      const raw = includeSignature
+        ? [[nonce, maxPriorityFeePerGas, maxFeePerGas, gas, to, value, storageLimit, epochHeight, chainId, data, accessList], v, r, s]
+        : [nonce, maxPriorityFeePerGas, maxFeePerGas, gas, to, value, storageLimit, epochHeight, chainId, data, accessList];
+      
+        return Buffer.concat([this.typePrefix(), rlp.encode(raw)]);
+    } else {
+      throw new Error('Unsupported transaction type');
+    }
+  } 
 
   /**
    * Get the raw transaction hex string.
