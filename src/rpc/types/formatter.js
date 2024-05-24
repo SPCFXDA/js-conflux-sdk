@@ -43,7 +43,7 @@ cfxFormat.getLogsAdvance = function (networkId, toHexAddress = false, useVerbose
 };
 
 cfxFormat.AccessListEntry = format({
-  address: format.any,
+  address: format.hexAddress,
   storageKeys: [format.hex64],
 });
 
@@ -105,7 +105,7 @@ cfxFormat.sign1559Tx = format({
  * @property {number} [chainId]
  */
 cfxFormat.callTx = format({
-  type: format.uInt.$or(null),
+  type: format.bigUInt.$or(null),
   from: format.address,
   nonce: format.bigUIntHex,
   gasPrice: format.bigUIntHex.$or(null),
@@ -128,7 +128,7 @@ cfxFormat.callTx = format({
 cfxFormat.callTxAdvance = function (networkId, toHexAddress = false, useVerboseAddress = false) {
   const fromatAddress = toHexAddress ? format.hexAddress : format.netAddress(networkId, useVerboseAddress);
   return format({
-    type: format.uInt.$or(null),
+    type: format.bigUInt.$or(null),
     from: fromatAddress,
     nonce: format.bigUIntHex,
     gasPrice: format.bigUIntHex.$or(null),

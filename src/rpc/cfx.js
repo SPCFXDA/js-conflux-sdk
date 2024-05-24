@@ -472,11 +472,10 @@ class CFX extends RPCMethodFactory {
     // auto detect transaction type
     let baseFeePerGas;
     if (options.type === undefined) {
-      const block = await this.getBlockByEpochNumber(options.epochHeight);
+      const block = await this.getBlockByEpochNumber(options.epochHeight, false);
       baseFeePerGas = block.baseFeePerGas;
-      const hasAccessList = !!options.accessList;
 
-      const pre1559Type = hasAccessList ? CONST.TRANSACTION_TYPE_EIP2930 : CONST.TRANSACTION_TYPE_LEGACY;
+      const pre1559Type = options.accessList ? CONST.TRANSACTION_TYPE_EIP2930 : CONST.TRANSACTION_TYPE_LEGACY;
       options.type = baseFeePerGas ? CONST.TRANSACTION_TYPE_EIP1559 : pre1559Type;
     }
 
@@ -485,7 +484,7 @@ class CFX extends RPCMethodFactory {
       let storageLimit;
 
       const isToUser = options.to && addressUtil.isValidCfxAddress(options.to) && decodeCfxAddress(options.to).type === ADDRESS_TYPES.USER;
-      if (isToUser && !options.data) {
+      if (isToUser && !options.data && !options.accessList) {
         gas = CONST.TRANSACTION_GAS;
         storageLimit = CONST.TRANSACTION_STORAGE_LIMIT;
       } else {
