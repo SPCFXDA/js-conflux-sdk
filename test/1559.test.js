@@ -3,11 +3,12 @@ const { Conflux, Drip } = require('../src');
 const { TEST_KEY } = require('./index');
 const NET8888_URL = "https://net8888cfx.confluxrpc.com";
 const NET8888_ID = 8888;
+const STORAGE_KEY1 = '0x0000000000000000000000000000000000000000000000000000000000000001';
 
 const conflux = new Conflux({
   url: NET8888_URL,
   networkId: NET8888_ID,
-  // logger: console,
+  // logger: {info: val => console.log(JSON.stringify(val, null, '\t'))},
 });
 
 // net8888:aasm4c231py7j34fghntcfkdt2nm9xv1tup330k3e4
@@ -24,7 +25,7 @@ test('Test 1559 Base', async () => {
     to: account.address,
     accessList: [{
       address: account.address,
-      storageKeys: ["0x0000000000000000000000000000000000000000000000000000000000000001"],
+      storageKeys: [STORAGE_KEY1],
     }],
     value: 1,
   }).executed();
@@ -39,4 +40,18 @@ test('Test 1559 Base', async () => {
   expect(tx).toHaveProperty('maxFeePerGas');
   expect(tx).toHaveProperty('accessList');
   expect(tx).toHaveProperty('yParity');
+});
+
+test('1559 estimate', async () => {
+  const estimate = await conflux.cfx.estimateGasAndCollateral({
+    type: 2,
+    from: account.address,
+    to: account.address,
+    value: 1,
+    accessList: [{
+      address: account.address,
+      storageKeys: [STORAGE_KEY1],
+    }],
+  });
+  expect(estimate).toHaveProperty('gasUsed');
 });

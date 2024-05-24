@@ -105,7 +105,7 @@ cfxFormat.sign1559Tx = format({
  * @property {number} [chainId]
  */
 cfxFormat.callTx = format({
-  type: format.bigUInt.$or(null),
+  type: format.bigUIntHex.$or(null),
   from: format.address,
   nonce: format.bigUIntHex,
   gasPrice: format.bigUIntHex.$or(null),
@@ -128,7 +128,7 @@ cfxFormat.callTx = format({
 cfxFormat.callTxAdvance = function (networkId, toHexAddress = false, useVerboseAddress = false) {
   const fromatAddress = toHexAddress ? format.hexAddress : format.netAddress(networkId, useVerboseAddress);
   return format({
-    type: format.bigUInt.$or(null),
+    type: format.bigUIntHex.$or(null),
     from: fromatAddress,
     nonce: format.bigUIntHex,
     gasPrice: format.bigUIntHex.$or(null),
