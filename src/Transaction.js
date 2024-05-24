@@ -12,7 +12,6 @@ const { TXRLP_TYPE_PREFIX_2930, TXRLP_TYPE_PREFIX_1559 } = require('./CONST');
 class Transaction {
   /**
    * Decode rlp encoded raw transaction hex string
-   * TODO: support EIP-2930 and EIP-1559
    * @param {string} raw - rlp encoded transaction hex string
    * @returns {Transaction} A Transaction instance
    */
@@ -254,35 +253,31 @@ class Transaction {
    * @return {Buffer}
    */
   encode(includeSignature) {
+    let raw;
     if (this.type === 0) { // legacy transaction
       const { nonce, gasPrice, gas, to, value, storageLimit, epochHeight, chainId, data, v, r, s } = cfxFormat.signTx(this);
 
-      const raw = includeSignature
+      raw = includeSignature
         ? [[nonce, gasPrice, gas, to, value, storageLimit, epochHeight, chainId, data], v, r, s]
         : [nonce, gasPrice, gas, to, value, storageLimit, epochHeight, chainId, data];
-
-      return rlp.encode(raw);
     } else if (this.type === 1) { // 2930 transaction
       const { nonce, gasPrice, gas, to, value, storageLimit, epochHeight, chainId, data, v, r, s } = cfxFormat.signTx(this);
       const accessList = this.accessList.encode();
 
-      const raw = includeSignature
+      raw = includeSignature
         ? [[nonce, gasPrice, gas, to, value, storageLimit, epochHeight, chainId, data, accessList], v, r, s]
         : [nonce, gasPrice, gas, to, value, storageLimit, epochHeight, chainId, data, accessList];
-
-      return Buffer.concat([this.typePrefix(), rlp.encode(raw)]);
     } else if (this.type === 2) { // 1559 transaction
       const { nonce, maxPriorityFeePerGas, maxFeePerGas, gas, to, value, storageLimit, epochHeight, chainId, data, v, r, s } = cfxFormat.sign1559Tx(this);
       const accessList = this.accessList.encode();
 
-      const raw = includeSignature
+      raw = includeSignature
         ? [[nonce, maxPriorityFeePerGas, maxFeePerGas, gas, to, value, storageLimit, epochHeight, chainId, data, accessList], v, r, s]
         : [nonce, maxPriorityFeePerGas, maxFeePerGas, gas, to, value, storageLimit, epochHeight, chainId, data, accessList];
-
-      return Buffer.concat([this.typePrefix(), rlp.encode(raw)]);
     } else {
       throw new Error('Unsupported transaction type');
     }
+    return Buffer.concat([this.typePrefix(), rlp.encode(raw)]);
   }
 
   /**

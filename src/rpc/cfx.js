@@ -63,7 +63,7 @@ class CFX extends RPCMethodFactory {
         requestFormatters: [
           format.bigUIntHex,
           format.epochNumber,
-          format([format.bigUIntHex]),
+          format.any, // f64 array
         ],
         responseFormatter: cfxFormat.feeHistory,
       },
@@ -526,7 +526,7 @@ class CFX extends RPCMethodFactory {
         options.maxPriorityFeePerGas = await this.maxPriorityFeePerGas();
 
         if (!baseFeePerGas) {
-          const block = await this.getBlockByEpochNumber(options.epochHeight);
+          const block = await this.getBlockByEpochNumber(options.epochHeight, false);
           baseFeePerGas = block.baseFeePerGas;
         }
 

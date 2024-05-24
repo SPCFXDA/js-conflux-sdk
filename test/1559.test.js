@@ -19,6 +19,7 @@ test('Test 1559 Base', async () => {
   expect(block).toHaveProperty('baseFeePerGas');
 
   const receipt = await conflux.cfx.sendTransaction({
+    type: 2,
     from: account.address,
     to: account.address,
     accessList: [{
