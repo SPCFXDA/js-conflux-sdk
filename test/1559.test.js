@@ -1,7 +1,7 @@
-const { Conflux, Drip } = require('../src');
-
+const { Conflux } = require('../src');
 const { TEST_KEY } = require('./index');
-const NET8888_URL = "https://net8888cfx.confluxrpc.com";
+
+const NET8888_URL = 'https://net8888cfx.confluxrpc.com';
 const NET8888_ID = 8888;
 const STORAGE_KEY1 = '0x0000000000000000000000000000000000000000000000000000000000000001';
 

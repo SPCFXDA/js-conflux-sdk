@@ -1,6 +1,6 @@
 const { Transaction, format, sign } = require('../src');
-
 const KEY = require('./index').TEST_KEY;
+
 const ADDRESS = 'cfxtest:aasm4c231py7j34fghntcfkdt2nm9xv1tu6jd3r1s7';
 const networkId = 1;
 
