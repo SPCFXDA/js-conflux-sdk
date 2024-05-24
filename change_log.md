@@ -1,5 +1,9 @@
 # change log
 
+## v2.4.0
+
+* Support conflux-rust v2.4.0, mainly about 1559 upgrade
+
 ## v2.3.0
 
 * Add three debug RPC method in `cfx` namespace `debug_getTransactionsByBlock`, `debug_getEpochReceiptProofByTransaction`, `debug_getTransactionsByEpoch`
