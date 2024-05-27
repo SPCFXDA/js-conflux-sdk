@@ -182,7 +182,7 @@ class Transaction {
     this.v = v;
     this.r = r;
     this.s = s;
-    this.accessList = new AccessList(accessList);
+    this.accessList = accessList ? new AccessList(accessList) : null;
     this.maxPriorityFeePerGas = maxPriorityFeePerGas;
     this.maxFeePerGas = maxFeePerGas;
   }

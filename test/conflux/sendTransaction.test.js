@@ -88,6 +88,7 @@ test('sendTransaction defaultGasPrice', async () => {
     storageLimit: format.bigUInt(2048),
     epochHeight: 1000,
     chainId: 1,
+    type: 0,
   });
 
   signTransaction.mockRestore();
@@ -118,6 +119,7 @@ test('sendTransaction MIN_GAS_PRICE', async () => {
     storageLimit: format.bigUInt(2048),
     epochHeight: 1000,
     chainId: 1,
+    type: 0,
   });
 
   getGasPrice.mockRestore();
@@ -163,6 +165,7 @@ test('sendTransaction auto', async () => {
     gasPrice: '10',
     nonce: '100',
     storageLimit: CONST.TRANSACTION_STORAGE_LIMIT,
+    type: 0,
   });
 
   await conflux.sendTransaction({
@@ -182,6 +185,7 @@ test('sendTransaction auto', async () => {
     nonce: '100',
     storageLimit: Math.round(2048 * 1.1).toString(),
     data: '0xabcd',
+    type: 0,
   });
 
   await conflux.sendTransaction({
@@ -199,6 +203,7 @@ test('sendTransaction auto', async () => {
     nonce: '100',
     storageLimit: Math.round(2048 * 1.1).toString(),
     data: '0xabcd',
+    type: 0,
   });
 
   await conflux.sendTransaction({
@@ -216,6 +221,7 @@ test('sendTransaction auto', async () => {
     nonce: '100',
     storageLimit: 2000,
     data: '0xabcd',
+    type: 0,
   });
 
   signTransaction.mockRestore();

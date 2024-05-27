@@ -8,7 +8,10 @@ const STORAGE_KEY1 = '0x00000000000000000000000000000000000000000000000000000000
 const conflux = new Conflux({
   url: NET8888_URL,
   networkId: NET8888_ID,
-  // logger: {info: val => console.log(JSON.stringify(val, null, '\t'))},
+  // logger: {
+  //   info: val => console.log(JSON.stringify(val, null, '\t')),
+  //   error: err => console.error(err)
+  // },
 });
 
 // net8888:aasm4c231py7j34fghntcfkdt2nm9xv1tup330k3e4
