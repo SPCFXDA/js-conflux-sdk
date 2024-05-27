@@ -14,7 +14,7 @@ conflux.provider = new MockProvider();
 const account = conflux.wallet.addPrivateKey(PRIVATE_KEY, CONST.TESTNET_ID);
 
 test('sendTransaction error', async () => {
-  await expect(conflux.sendTransaction()).rejects.toThrow('Cannot read property');
+  await expect(conflux.sendTransaction()).rejects.toThrow("Cannot read properties of undefined (reading 'from')");
 });
 
 test('sendTransaction remote', async () => {
