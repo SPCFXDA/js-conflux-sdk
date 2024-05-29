@@ -194,6 +194,7 @@ cfxFormat.estimate = format({
 
 /**
  * @typedef {Object} Transaction - Transaction
+ * @prop {number} type - the type of the transaction. 0 for legacy transaction, 1 for 2930 transaction, 2 for EIP-1559 transaction.
  * @prop {string} [blockHash=null] - hash of the block where this transaction was in and got executed. null when the transaction is pending.
  * @prop {number} chainId - the chain ID specified by the sender.
  * @prop {string} [contractCreated=null] - address of the contract created. null when it is not a contract deployment transaction.
@@ -202,6 +203,8 @@ cfxFormat.estimate = format({
  * @prop {string} from - address of the sender.
  * @prop {number} gas - the gas limit specified by the sender.
  * @prop {number} gasPrice - the gas price specified by the sender.
+ * @prop {number} maxPriorityFeePerGas - the maxPriorityFeePerGas specified by the sender.
+ * @prop {number} maxFeePerGas - the maxFeePerGas specified by the sender.
  * @prop {string} hash - hash of the transaction.
  * @prop {number} nonce - the nonce specified by the sender.
  * @prop {string} [to=null] - address of the receiver. null when it is a contract creation transaction.
@@ -210,8 +213,10 @@ cfxFormat.estimate = format({
  * @prop {string} r - ECDSA signature r
  * @prop {string} s - ECDSA signature s
  * @prop {number} v - ECDSA recovery v
+ * @prop {number} yParity - The parity (0 for even, 1 for odd) of the y-value of a secp256k1 signature.
  * @prop {number} [transactionIndex=null] - the transaction's position in the block. null when the transaction is pending.
  * @prop {number} [status=null] - 0 for success, 1 if an error occurred, 2 for skiped, null when the transaction is skipped or not packed.
+ * @prop {array} [accessList]
  */
 cfxFormat.transaction = format({
   type: format.uInt.$or(null),
@@ -225,6 +230,7 @@ cfxFormat.transaction = format({
   epochHeight: format.bigUInt,
   chainId: format.uInt,
   v: format.uInt,
+  yParity: format.uInt.$or(null),
   status: format.uInt.$or(null),
   transactionIndex: format.uInt.$or(null),
   accessList: format([cfxFormat.AccessListEntry]).$or(null),
@@ -236,6 +242,7 @@ cfxFormat.transaction = format({
  * @typedef {Object} Block - Block
  * @prop {boolean} adaptive - true if the weight of the block is adaptive under the GHAST rule.
  * @prop {number} blame - if 0, then this block does not blame any blocks on its parent path. If it is n > 0, then this block blames its n predecessors on its parent path, e.g. when n = 1, then the block blames its parent but not its parent's parent.
+ * @prop {number} baseFeePerGas - the base fee per gas for this block.
  * @prop {string} deferredLogsBloomHash - the hash of the logs bloom after deferred execution at the block's epoch (assuming it is the pivot block).
  * @prop {string} deferredReceiptsRoot - the Merkle root of the receipts after deferred execution at the block's epoch (assuming it is the pivot block).
  * @prop {string} deferredStateRoot - the hash of the state trie root triplet after deferred execution at the block's epoch (assuming it is the pivot block).
@@ -279,6 +286,8 @@ cfxFormat.block = format({
  * @prop {string} blockHash - hash of the block where this transaction was in and got executed.
  * @prop {string} transactionHash - hash of the transaction.
  * @prop {number} index - transaction index within the block.
+ * @prop {number} effectiveGasPrice - the effective gas price of the transaction.
+ * @prop {number} burntGasFee - the burnt gas fee of the transaction.
  * @prop {number} epochNumber - the number of the epoch containing this transaction in the node's view of the ledger.
  * @prop {string} from
  * @prop {string} [to=null] - address of the receiver. null when it is a contract deployment transaction.
