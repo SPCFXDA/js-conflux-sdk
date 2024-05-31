@@ -30,25 +30,26 @@ class Transaction {
 
     const publicKey = tx.recover();
     const hexAddress = publicKeyToAddress(format.hexBuffer(publicKey));
-    tx.from = format.address(hexAddress, formatedMeta.chainId);
+    tx.from = format.address(hexAddress, tx.chainId);
 
     return tx;
   }
 
-  static formatTxMeta({nonce, gas, to, value, storageLimit, epochHeight, chainId, data, r, s, v}) {
+  static formatTxMeta({ nonce, gas, to, value, storageLimit, epochHeight, chainId, data, r, s, v }) {
+    const chainIdNum = format.uInt(chainId);
     return {
       nonce: format.bigIntFromBuffer(nonce),
       gas: format.bigIntFromBuffer(gas),
-      to: to.length === 0 ? null : format.address(to, netId),
+      to: to.length === 0 ? null : format.address(to, chainIdNum),
       value: format.bigIntFromBuffer(value),
       storageLimit: format.bigIntFromBuffer(storageLimit),
       epochHeight: format.bigIntFromBuffer(epochHeight),
-      chainId: format.uInt(chainId),
+      chainId: chainIdNum,
       data: format.hex(data),
       v: v.length === 0 ? 0 : format.uInt(v),
       r: format.hex(r),
       s: format.hex(s),
-    }
+    };
   }
 
   static decodeLegacy(raw) {
@@ -59,11 +60,12 @@ class Transaction {
       s,
     ] = rlp.decode(raw);
 
-    const formatedMeta = Transaction.formatTxMeta({nonce, gas, to, value, storageLimit, epochHeight, chainId, data, r, s, v});
-    const tx = new Transaction(Object.assign({
+    const formatedMeta = Transaction.formatTxMeta({ nonce, gas, to, value, storageLimit, epochHeight, chainId, data, r, s, v });
+    const tx = new Transaction({
       type: 0,
       gasPrice: format.bigIntFromBuffer(gasPrice),
-    }, formatedMeta));
+      ...formatedMeta,
+    });
 
     return tx;
   }
@@ -76,12 +78,13 @@ class Transaction {
       s,
     ] = rlp.decode(raw);
 
-    const formatedMeta = Transaction.formatTxMeta({nonce, gas, to, value, storageLimit, epochHeight, chainId, data, r, s, v});
-    const tx = new Transaction(Object.assign({
+    const formatedMeta = Transaction.formatTxMeta({ nonce, gas, to, value, storageLimit, epochHeight, chainId, data, r, s, v });
+    const tx = new Transaction({
       type: 1,
       gasPrice: format.bigIntFromBuffer(gasPrice),
       accessList,
-    }, formatedMeta));
+      ...formatedMeta,
+    });
 
     return tx;
   }
@@ -94,14 +97,15 @@ class Transaction {
       s,
     ] = rlp.decode(raw);
 
-    const formatedMeta = Transaction.formatTxMeta({nonce, gas, to, value, storageLimit, epochHeight, chainId, data, r, s, v});
-    
-    const tx = new Transaction(Object.assign({
+    const formatedMeta = Transaction.formatTxMeta({ nonce, gas, to, value, storageLimit, epochHeight, chainId, data, r, s, v });
+
+    const tx = new Transaction({
       type: 2,
       maxPriorityFeePerGas: format.bigIntFromBuffer(maxPriorityFeePerGas),
       maxFeePerGas: format.bigIntFromBuffer(maxFeePerGas),
       accessList,
-    }, formatedMeta));
+      ...formatedMeta,
+    });
 
     return tx;
   }
