@@ -57,4 +57,12 @@ test('1559 estimate', async () => {
     }],
   });
   expect(estimate).toHaveProperty('gasUsed');
+
+  const estimate2 = await conflux.cfx.estimateGasAndCollateral({
+    type: 2,
+    from: account.address,
+    to: account.address,
+    value: 1,
+  });
+  expect(estimate2).toHaveProperty('gasUsed');
 });

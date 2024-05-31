@@ -3,7 +3,7 @@ const rlp = require('./util/rlp');
 const format = require('./util/format');
 const cfxFormat = require('./rpc/types/formatter');
 const { AccessList } = require('./primitives/AccessList');
-const { TXRLP_TYPE_PREFIX_2930, TXRLP_TYPE_PREFIX_1559 } = require('./CONST');
+const { TXRLP_TYPE_PREFIX_2930, TXRLP_TYPE_PREFIX_1559, TRANSACTION_TYPE_LEGACY, TRANSACTION_TYPE_EIP2930, TRANSACTION_TYPE_EIP1559 } = require('./CONST');
 
 /**
  * @typedef {import('./rpc/types/formatter').CallRequest} TransactionMeta
@@ -18,29 +18,26 @@ class Transaction {
   static decodeRaw(raw) {
     const buf = format.hexBuffer(raw);
     const prefix = buf.slice(0, 4);
+    let tx = null;
 
     if (prefix.equals(TXRLP_TYPE_PREFIX_2930)) {
-      return Transaction.decode2930(buf.slice(4));
+      tx = Transaction.decode2930(buf.slice(4));
     } else if (prefix.equals(TXRLP_TYPE_PREFIX_1559)) {
-      return Transaction.decode1559(buf.slice(4));
+      tx = Transaction.decode1559(buf.slice(4));
+    } else {
+      tx = Transaction.decodeLegacy(raw);
     }
 
-    return Transaction.decodeLegacy(raw);
+    const publicKey = tx.recover();
+    const hexAddress = publicKeyToAddress(format.hexBuffer(publicKey));
+    tx.from = format.address(hexAddress, formatedMeta.chainId);
+
+    return tx;
   }
 
-  static decodeLegacy(raw) {
-    const [
-      [nonce, gasPrice, gas, to, value, storageLimit, epochHeight, chainId, data],
-      v,
-      r,
-      s,
-    ] = rlp.decode(raw);
-
-    const netId = format.uInt(chainId);
-    const tx = new Transaction({
-      type: 0,
+  static formatTxMeta({nonce, gas, to, value, storageLimit, epochHeight, chainId, data, r, s, v}) {
+    return {
       nonce: format.bigIntFromBuffer(nonce),
-      gasPrice: format.bigIntFromBuffer(gasPrice),
       gas: format.bigIntFromBuffer(gas),
       to: to.length === 0 ? null : format.address(to, netId),
       value: format.bigIntFromBuffer(value),
@@ -51,11 +48,23 @@ class Transaction {
       v: v.length === 0 ? 0 : format.uInt(v),
       r: format.hex(r),
       s: format.hex(s),
-    });
+    }
+  }
 
-    const publicKey = tx.recover();
-    const hexAddress = publicKeyToAddress(format.hexBuffer(publicKey));
-    tx.from = format.address(hexAddress, netId);
+  static decodeLegacy(raw) {
+    const [
+      [nonce, gasPrice, gas, to, value, storageLimit, epochHeight, chainId, data],
+      v,
+      r,
+      s,
+    ] = rlp.decode(raw);
+
+    const formatedMeta = Transaction.formatTxMeta({nonce, gas, to, value, storageLimit, epochHeight, chainId, data, r, s, v});
+    const tx = new Transaction(Object.assign({
+      type: 0,
+      gasPrice: format.bigIntFromBuffer(gasPrice),
+    }, formatedMeta));
+
     return tx;
   }
 
@@ -67,29 +76,13 @@ class Transaction {
       s,
     ] = rlp.decode(raw);
 
-    // console.log(accessList);
-
-    const netId = format.uInt(chainId);
-    const tx = new Transaction({
+    const formatedMeta = Transaction.formatTxMeta({nonce, gas, to, value, storageLimit, epochHeight, chainId, data, r, s, v});
+    const tx = new Transaction(Object.assign({
       type: 1,
-      nonce: format.bigIntFromBuffer(nonce),
       gasPrice: format.bigIntFromBuffer(gasPrice),
-      gas: format.bigIntFromBuffer(gas),
-      to: to.length === 0 ? null : format.address(to, netId),
-      value: format.bigIntFromBuffer(value),
-      storageLimit: format.bigIntFromBuffer(storageLimit),
-      epochHeight: format.bigIntFromBuffer(epochHeight),
-      chainId: format.uInt(chainId),
-      data: format.hex(data),
       accessList,
-      v: v.length === 0 ? 0 : format.uInt(v),
-      r: format.hex(r),
-      s: format.hex(s),
-    });
+    }, formatedMeta));
 
-    const publicKey = tx.recover();
-    const hexAddress = publicKeyToAddress(format.hexBuffer(publicKey));
-    tx.from = format.address(hexAddress, netId);
     return tx;
   }
 
@@ -101,28 +94,15 @@ class Transaction {
       s,
     ] = rlp.decode(raw);
 
-    const netId = format.uInt(chainId);
-    const tx = new Transaction({
+    const formatedMeta = Transaction.formatTxMeta({nonce, gas, to, value, storageLimit, epochHeight, chainId, data, r, s, v});
+    
+    const tx = new Transaction(Object.assign({
       type: 2,
-      nonce: format.bigIntFromBuffer(nonce),
       maxPriorityFeePerGas: format.bigIntFromBuffer(maxPriorityFeePerGas),
       maxFeePerGas: format.bigIntFromBuffer(maxFeePerGas),
-      gas: format.bigIntFromBuffer(gas),
-      to: to.length === 0 ? null : format.address(to, netId),
-      value: format.bigIntFromBuffer(value),
-      storageLimit: format.bigIntFromBuffer(storageLimit),
-      epochHeight: format.bigIntFromBuffer(epochHeight),
-      chainId: format.uInt(chainId),
-      data: format.hex(data),
       accessList,
-      v: v.length === 0 ? 0 : format.uInt(v),
-      r: format.hex(r),
-      s: format.hex(s),
-    });
+    }, formatedMeta));
 
-    const publicKey = tx.recover();
-    const hexAddress = publicKeyToAddress(format.hexBuffer(publicKey));
-    tx.from = format.address(hexAddress, netId);
     return tx;
   }
 
@@ -246,6 +226,10 @@ class Transaction {
     return prefix;
   }
 
+  encodeAccessList() {
+    return this.accessList ? this.accessList.encode() : [];
+  }
+
   /**
    * Encode rlp.
    *
@@ -254,22 +238,22 @@ class Transaction {
    */
   encode(includeSignature) {
     let raw;
-    if (this.type === 0) { // legacy transaction
+    if (this.type === TRANSACTION_TYPE_LEGACY) { // legacy transaction
       const { nonce, gasPrice, gas, to, value, storageLimit, epochHeight, chainId, data, v, r, s } = cfxFormat.signTx(this);
 
       raw = includeSignature
         ? [[nonce, gasPrice, gas, to, value, storageLimit, epochHeight, chainId, data], v, r, s]
         : [nonce, gasPrice, gas, to, value, storageLimit, epochHeight, chainId, data];
-    } else if (this.type === 1) { // 2930 transaction
+    } else if (this.type === TRANSACTION_TYPE_EIP2930) { // 2930 transaction
       const { nonce, gasPrice, gas, to, value, storageLimit, epochHeight, chainId, data, v, r, s } = cfxFormat.signTx(this);
-      const accessList = this.accessList.encode();
+      const accessList = this.encodeAccessList();
 
       raw = includeSignature
         ? [[nonce, gasPrice, gas, to, value, storageLimit, epochHeight, chainId, data, accessList], v, r, s]
         : [nonce, gasPrice, gas, to, value, storageLimit, epochHeight, chainId, data, accessList];
-    } else if (this.type === 2) { // 1559 transaction
+    } else if (this.type === TRANSACTION_TYPE_EIP1559) { // 1559 transaction
       const { nonce, maxPriorityFeePerGas, maxFeePerGas, gas, to, value, storageLimit, epochHeight, chainId, data, v, r, s } = cfxFormat.sign1559Tx(this);
-      const accessList = this.accessList.encode();
+      const accessList = this.encodeAccessList();
 
       raw = includeSignature
         ? [[nonce, maxPriorityFeePerGas, maxFeePerGas, gas, to, value, storageLimit, epochHeight, chainId, data, accessList], v, r, s]
