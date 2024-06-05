@@ -283,6 +283,7 @@ cfxFormat.block = format({
 
 /**
  * @typedef {Object} TransactionReceipt - TransactionReceipt
+ * @prop {number} type - the type of the transaction. 0 for legacy transaction, 1 for 2930 transaction, 2 for EIP-1559 transaction.
  * @prop {string} blockHash - hash of the block where this transaction was in and got executed.
  * @prop {string} transactionHash - hash of the transaction.
  * @prop {number} index - transaction index within the block.
@@ -549,6 +550,13 @@ cfxFormat.wrapTransaction = format({
   ethTransaction: format.any,
 });
 
+/**
+ * @typedef {Object} FeeHistory
+ * @property {BigInt} oldestBlock Lowest block number of returned range.
+ * @property {number[]} gasUsedRatio An array of block gas used ratios. These are calculated as the ratio of tx gasLimit sum and block gasLimit.
+ * @property {BigInt[]} baseFeePerGas An array of block base fees per gas. This includes the next block after the newest of the returned range, because this value can be derived from the newest block. Zeroes are returned for pre-EIP-1559 blocks.
+ * @property {BigInt[][]} reward A two-dimensional array of effective priority fees per gas at the requested block percentiles.
+ */
 cfxFormat.feeHistory = format({
   oldestBlock: format.bigUInt,
   baseFeePerGas: [format.bigUInt],
