@@ -488,9 +488,6 @@ class CFX extends RPCMethodFactory {
       } else {
         const { gasUsed, storageCollateralized } = await this.estimateGasAndCollateral(options);
         gas = gasUsed;
-        if (gas > 15000000) {
-          gas = 15000000;
-        }
         storageLimit = storageCollateralized;
       }
 
