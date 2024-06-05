@@ -183,8 +183,6 @@ const conflux = new Conflux({
     url: 'https://test.confluxrpc.com',
     logger: console, // for debug
     defaultGasPrice: 1,
-    defaultGasRatio: 1.1,
-    defaultStorageRatio: 1.1,
     networkId: 1,
 });
 ```
@@ -199,7 +197,7 @@ Currentlly set the gasPrice to `1 Drip` will enough to send most transactions.
 
 ### `gas`
 
-First you can specify the tx.`gas`, if you don't it will use the result of `estimateGasAndCollateral.gasUsed`, and this value will be multiply a ratio `defaultGasRatio` \(default 1.1\), because the estimate result sometimes are not accurate, normally estimated `gasUsed` will not enough.
+First you can specify the tx.`gas`, if you don't it will use the result of `estimateGasAndCollateral.gasUsed`.
 
 ### `storageLimit`
 

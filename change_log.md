@@ -11,6 +11,8 @@
 * Transaction's receipt have three new fields `type`, `burntGasFee`, `effectiveGasPrice`
 * Block have a new field `baseFeePerGas`
 
+`Conflux` class constructor parameters do not support `defaultGasRatio`, `defaultStorageRatio` anymore, because the estimation of gas and storage collateral is very accurate now.
+
 ## v2.3.0
 
 * Add three debug RPC method in `cfx` namespace `debug_getTransactionsByBlock`, `debug_getEpochReceiptProofByTransaction`, `debug_getTransactionsByEpoch`

@@ -20,8 +20,6 @@ const AdvancedRPCUtilities = require('./rpc/Advanced');
 /**
  * @typedef {Object} ConfluxOption
  * @property {string|number} [options.defaultGasPrice] - The default gas price in drip to use for transactions.
- * @property {number} [options.defaultGasRatio] - The ratio to multiply by gas.
- * @property {number} [options.defaultStorageRatio] - The ratio to multiply by storageLimit.
  * @property {string} [options.url] - Url of Conflux node to connect.
  * @property {number} [options.retry] - Retry times if request error occurs.
  * @property {number} [options.timeout] - Request time out in ms
@@ -64,8 +62,6 @@ class Conflux {
    */
   constructor({
     defaultGasPrice,
-    defaultGasRatio,
-    defaultStorageRatio,
     networkId,
     useHexAddressInParameter = false,
     useVerboseAddress = false,
@@ -96,34 +92,6 @@ class Conflux {
      * @type {number|string}
      */
     this.defaultGasPrice = defaultGasPrice;
-
-    /**
-     * If transaction.gas is undefined, gas will be set by estimate,
-     * cause gas used might be change during `estimateGasAndCollateral` and `sendTransaction`,
-     * estimate value need to multiply by defaultGasRatio (>1.0) in case of gas not enough.
-     *
-     * > transaction.gas = estimate.gasUsed * defaultGasRatio
-     *
-     * Default gas price for following methods:
-     * - `Conflux.sendTransaction`
-     *
-     * @type {number}
-     */
-    this.defaultGasRatio = defaultGasRatio;
-
-    /**
-     * If transaction.storageLimit is undefined, storageLimit will be set by estimate,
-     * cause storage limit might be change during `estimateGasAndCollateral` and `sendTransaction`,
-     * estimate value need to multiply by defaultStorageRatio (>1.0) in case of storageLimit not enough.
-     *
-     * > transaction.storageLimit = estimate.storageCollateralized * defaultStorageRatio
-     *
-     * Default gas price for following methods:
-     * - `Conflux.sendTransaction`
-     *
-     * @type {number}
-     */
-    this.defaultStorageRatio = defaultStorageRatio;
 
     this.sendRawTransaction = this._decoratePendingTransaction(this.sendRawTransaction);
     this.sendTransaction = this._decoratePendingTransaction(this.sendTransaction);
