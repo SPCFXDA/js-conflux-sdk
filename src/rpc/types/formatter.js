@@ -43,7 +43,7 @@ cfxFormat.getLogsAdvance = function (networkId, toHexAddress = false, useVerbose
 };
 
 cfxFormat.AccessListEntry = format({
-  address: format.hexAddress,
+  address: format.address,
   storageKeys: [format.hex64],
 });
 

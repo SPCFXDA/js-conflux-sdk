@@ -2,7 +2,7 @@
 
 ## v2.4.0
 
-* Support conflux-rust v2.4.0 `new RPC methods`(https://github.com/Conflux-Chain/conflux-rust/blob/master/changelogs/JSONRPC.md#v240) cfx_feeHistory, cfx_maxPriorityFeePerGas etc.
+* Support conflux-rust v2.4.0 `new RPC methods`(https://github.com/Conflux-Chain/conflux-rust/blob/master/changelogs/JSONRPC.md#v240) `cfx_feeHistory`, `cfx_maxPriorityFeePerGas` etc.
 * Support Conflux 2930 and 1559 type transactions, will auto detect the transaction type and use the right method to sign the transaction. Default is 1559 type.
   * The transaction now has a new field `type` which can be `0`, `1` or `2`, `0` is legacy type, `1` is 2930 type `2` is 1559 type.
   * The 2930 type transaction will have a new field `accessList` which is an array of `address` and `storageKeys` pairs.

@@ -446,8 +446,6 @@ class CFX extends RPCMethodFactory {
   async populateTransaction(options) {
     const {
       defaultGasPrice,
-      defaultGasRatio,
-      defaultStorageRatio,
     } = this.conflux;
 
     options.from = this._formatAddress(options.from);
@@ -488,16 +486,12 @@ class CFX extends RPCMethodFactory {
         gas = CONST.TRANSACTION_GAS;
         storageLimit = CONST.TRANSACTION_STORAGE_LIMIT;
       } else {
-        const { gasUsed, storageCollateralized, gasLimit } = await this.estimateGasAndCollateral(options);
-        if (defaultGasRatio) {
-          gas = format.big(gasUsed).times(defaultGasRatio).toFixed(0);
-          if (gas > 15000000) {
-            gas = 15000000;
-          }
-        } else {
-          gas = gasLimit;
+        const { gasUsed, storageCollateralized } = await this.estimateGasAndCollateral(options);
+        gas = gasUsed;
+        if (gas > 15000000) {
+          gas = 15000000;
         }
-        storageLimit = format.big(storageCollateralized).times(defaultStorageRatio).toFixed(0);
+        storageLimit = storageCollateralized;
       }
 
       if (options.gas === undefined) {
