@@ -3,7 +3,13 @@ const rlp = require('./util/rlp');
 const format = require('./util/format');
 const cfxFormat = require('./rpc/types/formatter');
 const { AccessList } = require('./primitives/AccessList');
-const { TXRLP_TYPE_PREFIX_2930, TXRLP_TYPE_PREFIX_1559, TRANSACTION_TYPE_LEGACY, TRANSACTION_TYPE_EIP2930, TRANSACTION_TYPE_EIP1559 } = require('./CONST');
+const {
+  TXRLP_TYPE_PREFIX_2930,
+  TXRLP_TYPE_PREFIX_1559,
+  TRANSACTION_TYPE_LEGACY,
+  TRANSACTION_TYPE_EIP2930,
+  TRANSACTION_TYPE_EIP1559,
+} = require('./CONST');
 
 /**
  * @typedef {import('./rpc/types/formatter').CallRequest} TransactionMeta

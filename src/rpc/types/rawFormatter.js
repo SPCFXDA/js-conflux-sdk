@@ -28,6 +28,10 @@ format.rawTransaction = format({
   v: format.bigUIntHex,
   status: format.bigUIntHex.$or(null),
   transactionIndex: format.bigUIntHex.$or(null),
+  maxFeePerGas: format.bigUIntHex.$or(null),
+  maxPriorityFeePerGas: format.bigUIntHex.$or(null),
+  type: format.bigUIntHex.$or(null),
+  yParity: format.bigUIntHex.$or(null),
 }, {
   name: 'format.rawTransaction',
 }).$or(null);
@@ -39,6 +43,9 @@ format.rawReceipt = format({
   gasUsed: format.bigUIntHex,
   gasFee: format.bigUIntHex,
   storageCollateralized: format.bigUIntHex,
+  type: format.bigUIntHex.$or(null),
+  effectiveGasPrice: format.bigUIntHex.$or(null),
+  burntGasFee: format.bigUIntHex.$or(null),
   storageReleased: [{
     collaterals: format.bigUIntHex,
   }],
@@ -60,6 +67,7 @@ format.rawLogs = format([format.rawLog]);
 format.rawBlock = format({
   epochNumber: format.bigUIntHex.$or(null),
   blockNumber: format.bigUIntHex.$or(null),
+  baseFeePerGas: format.bigUIntHex.$or(null),
   blame: format.bigUIntHex,
   height: format.bigUIntHex,
   size: format.bigUIntHex,

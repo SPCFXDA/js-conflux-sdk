@@ -49,17 +49,17 @@ class CFX extends RPCMethodFactory {
       },
       {
         method: 'cfx_maxPriorityFeePerGas',
-        alias: 'maxPriorityFeePerGas',
         responseFormatter: format.bigUInt,
       },
       {
         method: 'cfx_getFeeBurnt',
-        alias: 'getFeeBurnt',
+        requestFormatters: [
+          format.epochNumberOrUndefined,
+        ],
         responseFormatter: format.bigUInt,
       },
       {
         method: 'cfx_feeHistory',
-        alias: 'feeHistory',
         requestFormatters: [
           format.bigUIntHex,
           format.epochNumber,
@@ -467,6 +467,10 @@ class CFX extends RPCMethodFactory {
       options.epochHeight = await this.epochNumber();
     }
 
+    if (options.gasPrice && (options.maxFeePerGas || options.maxPriorityFeePerGas)) {
+      throw new Error('`gasPrice` should not be set with `maxFeePerGas` or `maxPriorityFeePerGas`');
+    }
+
     // auto detect transaction type
     let baseFeePerGas;
     if (options.type === undefined) {
@@ -510,18 +514,32 @@ class CFX extends RPCMethodFactory {
           options.gasPrice = defaultGasPrice;
         }
       }
+      options.maxFeePerGas = undefined;
+      options.maxPriorityFeePerGas = undefined;
     }
     // auto fill maxPriorityFeePerGas and maxFeePerGas
     if (options.type === CONST.TRANSACTION_TYPE_EIP1559) {
-      if (!options.maxPriorityFeePerGas || !options.maxFeePerGas) {
-        options.maxPriorityFeePerGas = await this.maxPriorityFeePerGas();
+      if (options.gasPrice) {
+        options.maxFeePerGas = options.gasPrice;
+        options.maxPriorityFeePerGas = options.gasPrice;
+        options.gasPrice = undefined;
+      }
 
+      if (!options.maxPriorityFeePerGas) {
+        options.maxPriorityFeePerGas = await this.maxPriorityFeePerGas();
+      }
+
+      if (!options.maxFeePerGas) {
         if (!baseFeePerGas) {
           const block = await this.getBlockByEpochNumber(options.epochHeight, false);
           baseFeePerGas = block.baseFeePerGas;
         }
 
-        options.maxFeePerGas = options.maxPriorityFeePerGas + (baseFeePerGas * BigInt(4)) / BigInt(3);
+        options.maxFeePerGas = options.maxPriorityFeePerGas + baseFeePerGas * BigInt(2);
+      }
+
+      if (options.maxFeePerGas < options.maxPriorityFeePerGas) {
+        throw new Error('`maxFeePerGas` should not be less than `maxPriorityFeePerGas`');
       }
     }
 

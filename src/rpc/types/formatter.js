@@ -552,13 +552,13 @@ cfxFormat.wrapTransaction = format({
 
 /**
  * @typedef {Object} FeeHistory
- * @property {BigInt} oldestBlock Lowest block number of returned range.
+ * @property {BigInt} oldestEpoch Lowest epoch number of returned range.
  * @property {number[]} gasUsedRatio An array of block gas used ratios. These are calculated as the ratio of tx gasLimit sum and block gasLimit.
  * @property {BigInt[]} baseFeePerGas An array of block base fees per gas. This includes the next block after the newest of the returned range, because this value can be derived from the newest block. Zeroes are returned for pre-EIP-1559 blocks.
  * @property {BigInt[][]} reward A two-dimensional array of effective priority fees per gas at the requested block percentiles.
  */
 cfxFormat.feeHistory = format({
-  oldestBlock: format.bigUInt,
+  oldestEpoch: format.bigUInt,
   baseFeePerGas: [format.bigUInt],
   reward: [[format.bigUInt]],
   gasUsedRatio: format.any,
