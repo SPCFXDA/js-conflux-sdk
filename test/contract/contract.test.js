@@ -42,13 +42,13 @@ test('Contract', async () => {
 
 test('Internal Contract', async () => {
   const adminControl = conflux.InternalContract('AdminControl');
-  expect(adminControl.address).toEqual('0x0888000000000000000000000000000000000000');
+  expect(format.hexAddress(adminControl.address)).toEqual('0x0888000000000000000000000000000000000000');
 
   const sponsorWhitelistControl = conflux.InternalContract('SponsorWhitelistControl');
-  expect(sponsorWhitelistControl.address).toEqual('0x0888000000000000000000000000000000000001');
+  expect(format.hexAddress(sponsorWhitelistControl.address)).toEqual('0x0888000000000000000000000000000000000001');
 
   const staking = conflux.InternalContract('Staking');
-  expect(staking.address).toEqual('0x0888000000000000000000000000000000000002');
+  expect(format.hexAddress(staking.address)).toEqual('0x0888000000000000000000000000000000000002');
 
   expect(() => conflux.InternalContract('xxx')).toThrow('can not find internal contract');
 });
